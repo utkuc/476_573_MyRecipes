@@ -1,0 +1,18 @@
+Myrecipe uygulamasını kullanıcının elindeki malzemeleri arama cubugundan girerek bu malzemelerle yapabileceği en iyi yemekleri listeleyen bir uygulamadır. Siteye üye olmadan yalnızca arama yapabilir, üye olarak kendi menülerini oluşturabilir ve tarifleri review edebilir. Kullanıcı tarife girdiğinde bu tarifi içeren menüleri görebilir.
+üye olmuş ise kullanıcı menüleri puanlayabilir.
+
+A USER can search RECIPE according to written INGREDİENT list  
+
+A RECIPE consists of unique recipe_id, direction, fat, date, category_list, calories, desc,protein,rating, title,ingredient_id_list, ingredient_desc, sodium
+
+A CATEGORY consists of unique category_name
+A INGREDIENTS consists of unique ingredient_id
+
+A REVİEW consists of unique review_id, user_id, recipe_id, rate, desc
+A USER has a type(guest user or registered user)
+A registered USER can review recipe
+A registered USER can rate MENU
+A registered USER create MENU
+A MENU consists of unique menu_id, user_id, recipe_list, menu name rating
+A MENU_RATE consists of unique menu_rate_id, menu_id, user_id, rate 
+A USER consists of unique email, unique_id, password, username, name(first name, middle name, surname), register_date
