@@ -1,0 +1,46 @@
+-Myrecipe uygulamasını kullanıcının elindeki malzemeleri arama cubugundan girerek bu malzemelerle yapabileceği en iyi yemekleri listeleyen bir uygulamadır.
+-Siteye üye olmadan yalnızca arama yapılabilir, üye olunarak menülerini oluşturulabilir ve tarifleri review edilebilir.
+-Kullanıcı tarife girdiğinde bu tarifi içeren menüleri görebilir, üye olmuş ise kullanıcı menüleri puanlayabilir.
+
+Uygulama hakkında bazı açıklamalar:
+- Uygulamamızda Recipe ler ile Menuler farklı şeylerdir. Kullanıcıların recipeleri review etmesini istesekte, puanlamasını istememekteyiz.
+- Uygulamamızda kullanıcılar Recipe yaratamamaktadır. Recipe'ler uygulama geliştiricileri tarafından sağlanacaktır. Kullanıcılar Recipe'lerden oluşan Menuleri yaratabileceklerdir ve bunları puanlıyabilcektir.
+
+Öneriler Üzerine Ekleme:
+- Kullanıcılar arama yaparken sonuçlarda categori adına göre filtreliyebilceklerdir.
+- Kullanıcılar arama sonuclarını Recipe'in viewCount değerine göre sıralayabilcektir.(popüler-az populer)
+
+Bazı Açıklamalar:
+- Uygulamada kullanıcının elinde var olan malzeme ile en hızlı şekilde bir tarif bulmasını amaçlamaktayız. Genel mantık olarak kullanıcı malzeme girişi yaptıktan sonra tek tuşla yapabilceği tarifleri görebilmeli.
+- Kullanıcı bu tarifi ararken elinde var olan malzemeden daha az malzemeyle yapılabilecek tarifleri de kullanıcıya sunmayı amaçlıyoruz.(belirli bir limit içinde)
+- Kullanıcılar tariflere bakarken o tarifin içinde olduğu menülerde aynı sayfada kullanıcıya sunulacak.
+
+
+A USER can search RECIPE according to written INGREDIENT list(A USER search results should contain, at maximum all INGREDIENT list)
+A USER can filter search result according to category_name.
+A USER can order search result according to RECIPE's viewCount.
+A USER can be only guest user or registered user
+A USER can see MENUs which contain currently opened Recipe's id (recipe_id)
+
+A RECIPE consists of unique recipe_id, direction, fat, date, calories, description, protein, rating, title, ingredient_id_list, ingredient_desc, sodium, category_name, viewCount.
+A RECIPE has CATEGORIES.
+A RECIPE has IGREDIENTS.
+
+A CATEGORY consists of unique category_name(eg. vegan, diary, glutenfree...)
+A INGREDIENTS consists of unique ingredient_name.
+
+A registered USER consists of unique email, unique_id, password, unique username, name(first name, middle name, surname), register_date
+A registered USER can review RECIPE. Each review has review_id, user_id, recipe_id, description
+A registered USER create MENU.
+A registered USER make MENU_RATE.
+
+A MENU consists of unique menu_id, user_id, recipe_list, menu_name
+A MENU has a MENU_RATE.
+A MENU contains RECIPES.
+
+A MENU_RATE consists of unique menu_rate_id, menu_id, user_id, rate 
+
+
+
+
+
