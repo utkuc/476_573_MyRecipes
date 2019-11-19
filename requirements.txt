@@ -1,0 +1,6 @@
+Flask-HTTPAuth
+flask
+flask-sqlalchemy
+flask-jsonpify
+flask-restful
+cx_Oracle
