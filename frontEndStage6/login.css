@@ -1,0 +1,54 @@
+*{
+	margin: 0px;
+	padding: 0px;
+}
+body{
+	font-family: sans-serif;
+	background: url(images.jpg);
+	background-repeat: no-repeat;
+	background-size: cover;
+}
+#login{
+	text-align: center;
+	position: absolute;
+	left: 50%;
+	top: 50%;
+	transform: translate(-150%,-50%);
+	background: rgba(221,16,31,0.8);
+	border-radius: 20px;
+	padding: 15px;
+}
+#login img{
+	width: 80px;
+	height: auto;
+}
+input[type="text"]{
+	padding: 5px;
+	background: none;
+	font-size: 20px;
+	color: black;
+	border: none;
+	border-bottom: 1px solid white;
+}
+input[type="password"]{
+	font-size: 20px;
+	color: black;
+	border: none;
+	background: none;
+	border-bottom: 1px solid white;
+	padding: 5px;	
+}
+h2{
+	color: white;
+}
+h3{
+	color: white;
+}
+input[type="submit"]{
+	color: rgb(221,16,31);
+	background: white;
+	border: none;
+	font-size: 20px;
+	padding: 5px;
+	border-radius: 5px; 
+}
