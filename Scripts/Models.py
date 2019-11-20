@@ -4,7 +4,7 @@ from sqlalchemy.schema import Sequence
 id_seq = Sequence('id_seq')
 
 class User(db.Model):
-    __tablename__ = 'user'
+    __tablename__ = 'USER'
     id = db.Column(db.Integer(), id_seq,
                    server_default=id_seq.next_value(), primary_key=True)
     email = db.Column(db.String(255))
