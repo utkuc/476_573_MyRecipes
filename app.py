@@ -16,7 +16,7 @@ db = SQLAlchemy(app)
 api = Api(app)
 auth = HTTPBasicAuth()
 from Scripts.Models import User
-
+from Scripts.SqlUtils import SqlUtils
 
 def initDatabase():  # Delete All Tables, Create tables according to Model Imports
     db.drop_all()
@@ -56,7 +56,7 @@ user_fields = {
 
 
 class UserAPI(Resource):
-    decorators = [auth.login_required]
+    #decorators = [auth.login_required]
     def __init__(self):
         self.reqparse = reqparse.RequestParser()
         self.reqparse.add_argument('id', type=int, required=False,
@@ -82,12 +82,12 @@ class UserAPI(Resource):
     #Get Example: Get User with id
     @marshal_with(user_fields, envelope='User')
     def get(self, user_id):
-        return User.query.from_statement(db.text('SELECT * FROM "user" WHERE id=:val')). \
+        return User.query.from_statement(db.text('SELECT * FROM "USER" WHERE id=:val')). \
             params(val=user_id).first_or_404(description='There is no data with {}'.format(user_id))
 
 
 class UserList(Resource):
-    decorators = [auth.login_required]
+    #decorators = [auth.login_required]
 
     def __init__(self):
         self.reqparse = reqparse.RequestParser()
@@ -112,25 +112,12 @@ class UserList(Resource):
         super(UserList, self).__init__()
     #Post Example(RAW SQL): Create user with given info, Id will be auto generated.
     def post(self):
-        localvar = db.engine.raw_connection().cursor().var(int) # Required for getting id after Insertion(Works only for cx_Oracle)
-
         args = self.reqparse.parse_args()
-        user = User(email=args['email'], username=args['username'], password=args['password'],
+        user: User = User(email=args['email'], username=args['username'], password=args['password'],
                     fname=args['fname'], mname=args['mname'], lname=args['lname'], registerdate=args['registerdate'])
-        sql = """
-        INSERT INTO "user" (email,username,password,fname,mname,lname,registerdate)
-        VALUES(:emailval,:usernameval, :passwordval,:fnameval,:mnameval,:lnameval,:registerdateval)
-        RETURNING ID INTO :localvar
-        """
-        #Try to create user, if database gives Integrity Error(eg. unique user name) rollback and abort
         try:
-            db.session.execute(text(sql),{'emailval':user.email, 'usernameval':user.username,
-                                                       'passwordval':user.password,
-                                                       'fnameval':user.fname, 'mnameval':user.mname, 'lnameval':user.lname,
-                                                       'registerdateval':user.registerdate, 'localvar':localvar} )
-            db.session.commit()
-            user.id = localvar.getvalue()[0]
-
+            ex = SqlUtils()
+            ex.Insert(user)
         except IntegrityError as e:
             db.session.rollback()
             abort(409, str(e.orig) + " for parameters " + str(e.params))
