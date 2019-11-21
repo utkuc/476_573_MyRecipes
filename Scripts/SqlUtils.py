@@ -1,3 +1,5 @@
+from collections import namedtuple
+
 from Scripts.Models import User, Menu, MenuRate, Ingredient, Recipe, Category
 from flask import Flask, jsonify, make_response, render_template, abort
 from flask_sqlalchemy import SQLAlchemy
@@ -111,8 +113,7 @@ class SqlUtils:
             source.id = localvar.getvalue()[0]
             return source
 
-
-    def Delete(self, source: object):
+    def Delete(self, source: object) -> bool:
         typeofSource = source.__class__.__name__
         if isinstance(source, User):
             source: User
@@ -126,3 +127,66 @@ class SqlUtils:
             db.session.commit()
             return True
 
+    def GetModelWithID(self, tablename: str, id: int):
+        if(tablename.lower() == "USER".lower()):
+            sql = """
+                            SELECT *
+                            FROM "USER"
+                            WHERE  id = :val
+                            """
+            result = User()
+        elif (tablename.lower() == "MENU".lower()):
+            sql = """
+                            SELECT *
+                            FROM "MENU"
+                            WHERE  id = :val
+                            """
+            result = Menu()
+
+        elif (tablename.lower() == "RECIPE".lower()):
+            sql = """
+                            SELECT *
+                            FROM RECIPE
+                            WHERE  id = :val
+                            """
+            result =Recipe()
+        elif (tablename.lower() == "MENURATE".lower()):
+            sql = """
+                            SELECT *
+                            FROM MENURATE
+                            WHERE  id = :val
+                            """
+            result = MenuRate()
+        else:
+            return None
+        resultProxy = db.session.execute(text(sql), {'val': id})
+        db.session.commit()
+        for r in resultProxy:
+            r_dict = dict(r.items())
+        for att in r_dict:
+            result.__setattr__(att, r_dict[att])
+        return result
+    def GetModelWithName(self, tablename: str, name: str):
+        if(tablename.lower() == "CATEGORY".lower()):
+            sql = """
+                            SELECT *
+                            FROM CATEGORY
+                            WHERE  name = :val
+                            """
+            result = Category()
+        elif(tablename.lower() == "INGREDIENT".lower()):
+            sql = """
+                            SELECT *
+                            FROM INGREDIENT
+                            WHERE name = :val
+                            """
+            result = Ingredient()
+        else:
+            return None
+        resultProxy = db.session.execute(text(sql), {'val': name})
+        db.session.commit()
+        for r in resultProxy:
+            r_dict = dict(r.items())
+        for att in r_dict:
+            result.__setattr__(att, r_dict[att])
+        return result

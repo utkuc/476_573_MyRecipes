@@ -118,6 +118,7 @@ class UserList(Resource):
         try:
             ex = SqlUtils()
             ex.Insert(user)
+            var = ex.GetModelWithID("USER", 1)
         except IntegrityError as e:
             db.session.rollback()
             abort(409, str(e.orig) + " for parameters " + str(e.params))
