@@ -3,7 +3,7 @@ from flask import Flask, render_template, redirect, url_for, request
 import time
 import json
 import datetime
-from Scripts.Models import add_User, add_Ingredient
+from Scripts.Models import *
 app = Flask(__name__)
 
 
@@ -11,7 +11,7 @@ app = Flask(__name__)
 
 @app.route('/get_search_result_recipes', methods=['GET', 'POST'])
 def get_search_result():
-    error = None
+    
     if request.method == 'POST':
 
 
@@ -20,23 +20,25 @@ def get_search_result():
         password = content["password"]
         keywords = content["keywords"]
         categories = content["categories"]
-        order = content[""] #viewCount ,
+        order = content["order"] #viewCount ,
 
 
         if(categories):
             a = 1
             #categorye göre sorgu
 
-        otp = request.form['username']
-
-    return "" # verilen keywordlere bağlı recipeler dönülecek
-    # sorgu dışında 2 tane daha dönülecek bunlar en populer, 
+        a = get_users()
+        arr = []
+        for i in a:
+            arr.append(i.password)
+    return json.dumps(arr)  # verilen keywordlere bağlı recipeler dönülecek
+    # sorgu dışında 2 tane daha dönülecek bunlar en populer 
 
 
 
 @app.route('/sign_up', methods=['GET', 'POST'])
 def sign_up():
-    error = None
+    
     if request.method == 'POST':
         content = request.get_json()
         username = content["username"]
@@ -52,19 +54,44 @@ def sign_up():
     return "1" # tek usera ait menuler 
 
 
+   
 
+#TODO ayrı method olmamlı add recipe yapıldığında ingredient yaratılmalı
 @app.route('/add_ingredient', methods=['GET', 'POST'])
 def add_ingredient():
-    error = None
+    
     if request.method == 'POST':
         content = request.get_json()
         name = content["ingredient_name"]
         add_Ingredient(name)
     return "1" # tek usera ait menuler 
 
+
+
+@app.route('/add_recipe', methods=['GET', 'POST'])
+def add_recipe():
+    
+    if request.method == 'POST':
+        content = request.get_json()
+        direction = content["direction"]
+        fat = content["fat"]
+        date = datetime.datetime.now()#content["date"]
+        calories = content["calories"]
+        description = content["description"]
+        protein = content["protein"]
+        rating = content["rating"]
+        title =content["title"]
+        ingredientList = content["ingredientList"]## TODO connect with ingredients
+        ingredientDescription = content["ingredientDescription"]
+        sodium = content["sodium"]
+        categoryName = content["categoryName"]
+        add_Recipe(direction,fat,date,calories,description,protein,rating,title,ingredientList,ingredientDescription,sodium,categoryName)
+    return "1" 
+
+
 @app.route('/add_category', methods=['GET', 'POST'])
 def add_category():
-    error = None
+    
     if request.method == 'POST':
         content = request.get_json()
         name = content["category_name"]
@@ -76,7 +103,7 @@ def add_category():
 
 @app.route('/get_user_menus', methods=['GET', 'POST'])
 def get_user_menus():
-    error = None
+    
     if request.method == 'POST':
 
         content = request.get_json()
@@ -89,12 +116,17 @@ def get_user_menus():
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
-    error = None
+    
     if request.method == 'POST':
 
 
         content = request.get_json()
-        username = ""
+        username = content["username"]
+        password = content["password"]
+        check_result = check_password(username,password)
+        result = {}
+        result["result"] = check_result
+        return json.dumps(result)
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=4545,debug=True)

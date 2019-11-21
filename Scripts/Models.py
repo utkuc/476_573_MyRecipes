@@ -39,10 +39,12 @@ class Recipe(Base):
     protein = Column(Integer())
     rating = Column(Integer())
     title = Column(String(255))
-    ingredientList = Column(String(255))
-    ingredientDescription = Column(String(255))
+    #TODO find ingredient and add 
+    ingredientList = Column(String(255)) # refer to ingredients 
+    ingredientDescription = Column(String(255)) # quantity of ingredients
     sodium = Column(Integer())
     categoryName = Column(String(255))
+    carbohydrates = Column(Integer())
 
 class Menu(Base):
     __tablename__ = 'menu'
@@ -86,7 +88,28 @@ def add_User(email,username,password,fname,mname,lname,registerdate):
         except:
             continue    
 
+def add_Recipe(direction,fat,date,calories,description,protein,rating,title,ingredientList,ingredientDescription,sodium,categoryName):
+    for i in range(5):
+        st_id = random.randint(1,2**24)
+        #datetime convert    date =
+        #ingredientler idleri listelenecek
+        #category categorye refer edicek 
+        try:
+            Session = sessionmaker(bind=engine)
+            session = Session()
+            admin = Recipe(id=st_id,direction=direction,fat=int(fat),date=date,calories=int(calories),description=description, 
+            protein=int(protein),rating=int(rating),title=title,ingredientList=ingredientList,ingredientDescription=ingredientDescription,
+            sodium=int(sodium),categoryName=categoryName)
+            session.add(admin)
+            session.commit()
+            break
+        except:
+            continue    
 
+def get_users():
+    Session = sessionmaker(bind=engine)
+    session = Session()
+    return session.query(User).filter(User.password == "password")
 
 
 def add_Ingredient(name):
