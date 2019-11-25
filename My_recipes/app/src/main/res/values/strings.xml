@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">My_recipes</string>
+    <string name="title_activity_login">Login</string>
+    <string name="title_activity_signup">Signup</string>
+    <string name="title_activity_search">Search</string>
+    <string name="title_activity_category_filter">CategoryFilter</string>
+    <string name="title_activity_recipes">Recipes</string>
+    <string name="title_activity_recipe_page">Recipe_page</string>
+    <string name="title_activity_review_page">Review_page</string>
+</resources>

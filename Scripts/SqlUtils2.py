@@ -1,4 +1,4 @@
-from Scripts.Models import User, Menu, MenuRate, Ingredient, Recipe, Category
+from Models import User, Menu, MenuRate, Ingredient, Recipe, Category
 from flask import Flask, jsonify, make_response, render_template, abort
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import text
@@ -17,13 +17,14 @@ class SqlUtils:
     def Insert(self, source: object):
         localvar = db.engine.raw_connection().cursor().var(
             int)  # Required for getting id after Insertion(Works only for cx_Oracle)
-
+        print(type(source))
+        print(isinstance(source, User))
         if isinstance(source, User):
             source: User
 
             sql = """
-                    INSERT INTO "USER" (email,username,password,fname,mname,lname,registerdate)
-                    VALUES(:emailval,:usernameval, :passwordval,:fnameval,:mnameval,:lnameval,:registerdateval)
+                    INSERT INTO "USER" (id,email,username,password,fname,mname,lname,registerdate)
+                    VALUES(idval:emailval,:usernameval, :passwordval,:fnameval,:mnameval,:lnameval,:registerdateval)
                     RETURNING ID INTO :localvar
                     """
 

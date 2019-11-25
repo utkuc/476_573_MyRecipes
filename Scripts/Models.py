@@ -4,6 +4,7 @@ id_seq = Sequence('id_seq')
 
 
 
+ 
 import os
 import sys
 from sqlalchemy import Column, ForeignKey, Integer, String,DateTime
@@ -17,9 +18,14 @@ engine = create_engine('oracle+cx_oracle://mustafa:1234@24.133.185.104:1521/XE')
 Base = declarative_base()
 Base.metadata.create_all(engine)
 
+from sqlalchemy.schema import Sequence
+#id_seq is required for auto id generation(cx_Oracle)
+id_seq = Sequence('id_seq')
+
+
 class User(Base):
     __tablename__ = 'USER'
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer(), id_seq,server_default=id_seq.next_value(), primary_key=True)
     email = Column(String(255))
     username = Column(String(255))
     password = Column(String(255))
@@ -40,11 +46,24 @@ class Recipe(Base):
     rating = Column(Integer())
     title = Column(String(255))
     #TODO find ingredient and add 
-    ingredientList = Column(String(255)) # refer to ingredients 
+    ingredientList = Column(String(255))# relationship("IngredientListObj",back_populates="recipe")# refer to ingredients 
     ingredientDescription = Column(String(255)) # quantity of ingredients
+    minutes = Column(Integer())
     sodium = Column(Integer())
-    categoryName = Column(String(255))
+    categoryList = relationship
     carbohydrates = Column(Integer())
+"""
+class IngredientListObj(Base):# recipe has ingredients, ingre
+    __tablename__ = 'IngredientList'
+    left_id = Column(Integer, ForeignKey('recipe.id'), primary_key=True)
+    right_id = Column(Integer, ForeignKey('ingredient.id'), primary_key=True)
+    ingredient = relationship("Ingredient", back_populates="ingredientList")
+    recipe = relationship("Parent", back_populates="children")
+"""
+class Category(Base):
+    __tablename__ = 'category'
+    name = Column(String(255), primary_key=True)
+    recipes = ""
 
 class Menu(Base):
     __tablename__ = 'menu'
@@ -53,14 +72,11 @@ class Menu(Base):
     recipeList = Column(String(255))
     name = Column(String(255))
 
-
-class Category(Base):
-    __tablename__ = 'category'
-    name = Column(String(255), primary_key=True)
-
 class Ingredient(Base):
     __tablename__ = 'ingredient'
     name = Column(String(255), primary_key=True)
+    #recipeList = relationship("IngredientListObj")
+
 
 class MenuRate(Base):
     __tablename__ = 'menurate'
@@ -75,7 +91,11 @@ Base.metadata.create_all(engine)
 
 
 def add_User(email,username,password,fname,mname,lname,registerdate):
-    for i in range(5):
+    s = Sqlutils()
+    admin = User(id=st_id,email=email,username=username,password=password,fname=fname,mname=mname,lname=lname,registerdate=registerdate)
+    s.Insert(admin)
+
+    """for i in range(5):
         st_id = random.randint(1,2**24)
         
         try:
@@ -86,7 +106,7 @@ def add_User(email,username,password,fname,mname,lname,registerdate):
             session.commit()
             break
         except:
-            continue    
+            continue    """
 
 def add_Recipe(direction,fat,date,calories,description,protein,rating,title,ingredientList,ingredientDescription,sodium,categoryName):
     for i in range(5):
