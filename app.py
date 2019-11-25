@@ -1,5 +1,6 @@
 # Main Application
 import hashlib
+import uuid
 
 from flask import Flask, request
 from flask_httpauth import HTTPBasicAuth
@@ -19,7 +20,7 @@ from Scripts.Models import *
 
 
 def initDatabase():  # Delete All Tables, Create tables according to Model Imports
-    # db.drop_all()
+    #db.drop_all()
     db.create_all()
     db.session.commit()
 
@@ -117,7 +118,23 @@ class SqlUtils:
                                            })
             db.session.commit()
             return source
+        if isinstance(source, Review):
+            source: Review
+            if source.id is None:
+                raise Exception("Review Id can not be null")
+            sql = """
+                    INSERT INTO "REVIEW" (ID,USERNAME,RATING,comments,recipeid)
+                    VALUES(:idval,:username,:rating,:commentval,:recipeid)
+                    """
 
+            db.session.execute(text(sql), {'idval': source.id,
+                                           'username': source.username,
+                                           'rating': source.rating,
+                                           'commentval': source.comments,
+                                           'recipeid': source.recipeid
+                                           })
+            db.session.commit()
+            return source
         if isinstance(source, MenuRate):
             source: MenuRate
             if source.id is None:
@@ -163,6 +180,13 @@ class SqlUtils:
                             WHERE  id = :val
                             """
             result = Menu()
+        elif (tablename.lower() == "REVIEW".lower()):
+            sql = """
+                            SELECT *
+                            FROM "REVIEW"
+                            WHERE  id = :val
+                            """
+            result = Review()
 
         elif (tablename.lower() == "RECIPE".lower()):
             sql = """
@@ -187,6 +211,17 @@ class SqlUtils:
         for att in r_dict:
             result.__setattr__(att, r_dict[att])
         return result
+    def GetAllRecipeReviewById(self,recipeId):
+        sql = """
+                        SELECT *
+                        FROM "REVIEW"
+                        WHERE  recipeid = :val
+                        """
+        resultProxy = db.session.execute(text(sql), {'val': recipeId})
+        db.session.commit()
+        resultset = [dict(row) for row in resultProxy]
+        return resultset
+
 
     def GetModelWithName(self, tablename: str, name: str):
         if (tablename.lower() == "CATEGORY".lower()):
@@ -267,8 +302,25 @@ class SqlUtils:
         db.session.commit()
         resultset = [dict(row) for row in resultProxy]
         return resultset
-
-
+    def GetRecipeAverageRate(self,recipeId):
+        sql = """
+                                    SELECT AVG(rating)
+                                    FROM "REVIEW"
+                                    WHERE recipeid = :val
+                """
+        resultProxy = db.session.execute(text(sql), {'val': recipeId})
+        db.session.commit()
+        resultset = [dict(row) for row in resultProxy]
+        return resultset
+    def UpdateRecipeAverateRate(self,recipeId,rate):
+        sql = """
+                                    UPDATE "RECIPE"
+                                    SET RATING = :ratingval
+                                    WHERE ID = :val
+                """
+        db.session.execute(text(sql), {'val': recipeId , 'ratingval': rate})
+        db.session.commit()
+        return True
 sqlUtil = SqlUtils()
 
 
@@ -447,24 +499,46 @@ def add_category():
             return "True"
 
 
+@app.route('/get_recipe_reviews_with_id', methods=['GET', 'POST'])
+def get_recipe_reviews_with_id():
+    if request.method == 'POST':
+        content = request.get_json()
+        recipe_id = content["recipe_id"]
+        try:
+            result = sqlUtil.GetAllRecipeReviewById(recipe_id)
+        except:
+            return "False"
+    return json.dumps(result)  # all recipe info as json
+
+
+@app.route('/add_recipe_reviews_with_id', methods=['GET', 'POST'])
+def addrecipe_reviews_with_id():
+    if request.method == 'POST':
+        content = request.get_json()
+        recipe_id = content["recipe_id"]
+        username = content["username"]
+        comment = content["comments"]
+        rating = content["rating"]
+        id = uuid.uuid4().int & (1 << 64) - 1
+        review : Review = Review(id=id,username=username,comments=comment,rating=rating,recipeid=recipe_id)
+        try:
+            sqlUtil.Insert(review)
+            avgrate = sqlUtil.GetRecipeAverageRate(review.recipeid)
+            sqlUtil.UpdateRecipeAverateRate(review.recipeid,int(avgrate[0].get("AVG(RATING)")))
+            return "True"
+        except Exception as e:
+            print(str(e))
+            return "False "
+
+    return "False"
+
+
 @app.route('/test', methods=['GET', 'POST'])
 def test():
     if request.method == 'POST':
         pass
     if request.method == 'GET':
-        # user: User = User(email="asd", username="asddd", password="123123",
-        #                   fname="utku", mname=None, lname="Cuhadar",
-        #                   registerdate=None,id= 123123)
-        # sqlUtil.Insert(user)
-        # reci : Recipe = Recipe()
-        # cate1:Category = Category(name="category1")
-        # ing1:Ingredient = Ingredient(name="ing1")
-        # reci.categoryList.append(cate1)
-        # reci.ingredientList.append(ing1)
-        # db.session.add(reci)
-        # db.session.commit()
-        sqlUtil.GetRecipeId()
-        return "1"
+        pass
 
 
 if __name__ == '__main__':

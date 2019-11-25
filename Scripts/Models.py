@@ -39,7 +39,7 @@ class Recipe(db.Model):
     calories = db.Column(db.Integer())
     description = db.Column(db.String(255))
     protein = db.Column(db.Integer())
-    rating = db.Column(db.Integer())
+    rating = db.Column(db.Integer(),nullable=False)
     title = db.Column(db.String(255))
     ingredientList = db.relationship('Ingredient', secondary=ingredientList, lazy='subquery',
                                      backref=db.backref('Recipes', lazy=True))
@@ -75,3 +75,11 @@ class MenuRate(db.Model):
     menuId = db.Column(db.Integer(), db.ForeignKey('MENU.id'), nullable=False)
     userId = db.Column(db.Integer(), db.ForeignKey('USER.id'), nullable=False)
     rate = db.Column(db.Integer())
+
+class Review(db.Model):
+    __tablename__ = "REVIEW"
+    id = db.Column(db.Integer(), primary_key=True)
+    username = db.Column(db.String(255), db.ForeignKey('USER.username'), nullable=False)
+    rating = db.Column(db.Float())
+    comments = db.Column(db.String(255))
+    recipeid = db.Column(db.Integer(), db.ForeignKey('RECIPE.id'), nullable=False)
