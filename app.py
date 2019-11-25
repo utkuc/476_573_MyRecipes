@@ -19,12 +19,14 @@ from Scripts.Models import *
 
 
 def initDatabase():  # Delete All Tables, Create tables according to Model Imports
-    #db.drop_all()
+    # db.drop_all()
     db.create_all()
     db.session.commit()
 
 
 initDatabase()
+
+
 class SqlUtils:
 
     def Insert(self, source: object):
@@ -210,39 +212,60 @@ class SqlUtils:
         for att in r_dict:
             result.__setattr__(att, r_dict[att])
         return result
-    def GetUser(self,username):
-            sql = """
+
+    def GetUser(self, username):
+        sql = """
                             SELECT *
                             FROM "USER"
                             WHERE  USERNAME = :val
                             """
-            result = User()
-            resultProxy = db.session.execute(text(sql), {'val': username})
-            db.session.commit()
-            for r in resultProxy:
-                r_dict = dict(r.items())
-            for att in r_dict:
-                result.__setattr__(att, r_dict[att])
-            return result
-    def GetRecipeId(self,list):
+        result = User()
+        resultProxy = db.session.execute(text(sql), {'val': username})
+        db.session.commit()
+        for r in resultProxy:
+            r_dict = dict(r.items())
+        for att in r_dict:
+            result.__setattr__(att, r_dict[att])
+        return result
+
+    def GetRecipeId(self, list):
 
         if list[0] is not None:
             sql = """
                                     SELECT "Recipe_id"
                                     FROM "Ingredient_List"
-                                    WHERE "Ingredient_name" LIKE """ +"\'"+ list[0]+ "\'"
+                                    WHERE "Ingredient_name" LIKE """ + "\'" + list[0] + "\'"
         for ing in list[1:]:
             sql = sql + """         
                                     UNION
                                     SELECT "Recipe_id"
                                     FROM "Ingredient_List"
-                                    WHERE "Ingredient_name" LIKE """ + "\'" +ing+"\'"
-        
+                                    WHERE "Ingredient_name" LIKE """ + "\'" + ing + "\'"
+
         print(sql)
         resultProxy = db.session.execute(text(sql))
         db.session.commit()
         resultset = [dict(row) for row in resultProxy]
-        #print(resultset[0].get("Recipe_id"))
+        # print(resultset[0].get("Recipe_id"))
+        return resultset
+
+    def GetRecipeIdForCategory(self, list):
+        if list[0] is not None:
+            sql = """
+                                    SELECT "Recipe_id"
+                                    FROM "Category_List"
+                                    WHERE "Category_name" LIKE """ + "\'" + list[0] + "\'"
+        for ing in list[1:]:
+            sql = sql + """         
+                                    UNION
+                                    SELECT "Recipe_id"
+                                    FROM "Category_List"
+                                    WHERE "Category_name" LIKE """ + "\'" + ing + "\'"
+
+        print(sql)
+        resultProxy = db.session.execute(text(sql))
+        db.session.commit()
+        resultset = [dict(row) for row in resultProxy]
         return resultset
 
 
@@ -257,7 +280,7 @@ def get_search_result():
         password = content["password"]
         keywords = content["keywords"]
         categories = content["categories"]
-        if str(username).strip(): # Check for Login
+        if str(username).strip():  # Check for Login
             try:
                 user = sqlUtil.GetUser(username)
                 if user.password == password:
@@ -268,20 +291,24 @@ def get_search_result():
                 return "False"
         else:
             return "False"
-        ingListForSql = []
+
         arr = []
-        for val in keywords:
-            ingListForSql.append("%"+ val + "%")
-        recipeList = sqlUtil.GetRecipeId(ingListForSql)
-        for recipeId in recipeList:
-            recipe = sqlUtil.GetModelWithID("Recipe",recipeId)
-            arr.append(recipe.__dict__)
-
-        # önce order sabit olsun sonra 3 farklı order yapmaya çalışırız.  order = content["order"] #viewCount , rating , name
-
         if (categories):
-            a = 1
-            # categorye göre sorgu
+            catListForSql = []
+            for val in keywords:
+                catListForSql.append("%" + val + "%")
+            recipeList = sqlUtil.GetRecipeIdForCategory(catListForSql)
+            for recipeId2 in recipeList:
+                recipe = sqlUtil.GetModelWithID("Recipe", recipeId2)
+                arr.append(recipe.__dict__)
+        else:
+            ingListForSql = []
+            for val in keywords:
+                ingListForSql.append("%" + val + "%")
+            recipeList = sqlUtil.GetRecipeId(ingListForSql)
+            for recipeId in recipeList:
+                recipe = sqlUtil.GetModelWithID("Recipe", recipeId)
+                arr.append(recipe.__dict__)
 
     return json.dumps(arr)  # verilen keywordlere bağlı recipeler dönülecek
     # sorgu dışında 2 tane daha dönülecek bunlar en populer
@@ -298,13 +325,12 @@ def sign_up():
         mname = content["mname"]
         lname = content["lname"]
         id = hashlib.md5(str(email).encode('utf-8'))
-        #registerdate= datetime.today().strftime("%d-%m-%Y %H:%M:%S")
-        registerdate = None
-        idHashed= int(id.hexdigest(),base=16) %10000
+        registerdate = datetime.utcnow()
+        idHashed = int(id.hexdigest(), base=16) % 10000
         try:
             user: User = User(email=email, username=username, password=password,
                               fname=fname, mname=mname, lname=lname,
-                               registerdate=registerdate, id=idHashed)
+                              registerdate=registerdate, id=idHashed)
             sqlUtil.Insert(user)
             return "True"
         except:
@@ -331,6 +357,7 @@ def login():
     else:
         return "False"
 
+
 @app.route('/add_recipe', methods=['GET', 'POST'])
 def add_recipe():
     if request.method == 'POST':
@@ -348,7 +375,7 @@ def add_recipe():
         sodium = content["sodium"]
         categoryName = content["categoryName"]
         id = hashlib.md5(str(title).encode('utf-8'))
-        idHashed= int(id.hexdigest(),base=16)
+        idHashed = int(id.hexdigest(), base=16)
 
         recipe: Recipe = Recipe()
         recipe.direction = direction
@@ -359,10 +386,10 @@ def add_recipe():
         recipe.protein = protein
         recipe.rating = rating
         recipe.title = title
-        recipe.id = idHashed%100000
+        recipe.id = idHashed % 100000
         for ing in ingredientList:
             try:
-                #ingredient=sqlUtil.GetModelWithName("ingredient",ing["name"])
+                # ingredient=sqlUtil.GetModelWithName("ingredient",ing["name"])
                 ingredient = Ingredient.query.filter_by(name=str(ing["name"])).one()
                 recipe.ingredientList.append(ingredient)
             except Exception as e:
@@ -370,8 +397,8 @@ def add_recipe():
                 recipe.ingredientList.append(ingredient)
         for cat in categoryName:
             try:
-                #category = sqlUtil.GetModelWithName("category",cat["name"])
-                category = Category.query.filter_by(name = cat["name"]).one()
+                # category = sqlUtil.GetModelWithName("category",cat["name"])
+                category = Category.query.filter_by(name=cat["name"]).one()
                 recipe.categoryList.append(category)
             except Exception as e:
                 category: Category = Category(name=str(cat["name"]))
@@ -385,9 +412,10 @@ def add_recipe():
             db.session.add(recipe)
             db.session.commit()
         except Exception as e:
-            print("FAULT: "+ str(e))
+            print("FAULT: " + str(e))
             return "False"
         return "True"
+
 
 @app.route('/add_ingredient', methods=['GET', 'POST'])
 def add_ingredient():
@@ -395,20 +423,22 @@ def add_ingredient():
         content = request.get_json()
         name = content["name"]
         try:
-            result =sqlUtil.GetModelWithName("ingredient", name)
+            result = sqlUtil.GetModelWithName("ingredient", name)
             return "False"
         except:
             newIngredient = Ingredient()
             newIngredient.name = name
             sqlUtil.Insert(newIngredient)
             return "True"
+
+
 @app.route('/add_category', methods=['GET', 'POST'])
 def add_category():
     if request.method == 'POST':
         content = request.get_json()
         name = content["name"]
         try:
-            result = sqlUtil.GetModelWithName("category",name)
+            result = sqlUtil.GetModelWithName("category", name)
             return "False"
         except:
             newCategory = Category()
@@ -416,12 +446,12 @@ def add_category():
             sqlUtil.Insert(newCategory)
             return "True"
 
+
 @app.route('/test', methods=['GET', 'POST'])
 def test():
     if request.method == 'POST':
         pass
     if request.method == 'GET':
-
         # user: User = User(email="asd", username="asddd", password="123123",
         #                   fname="utku", mname=None, lname="Cuhadar",
         #                   registerdate=None,id= 123123)
@@ -435,10 +465,6 @@ def test():
         # db.session.commit()
         sqlUtil.GetRecipeId()
         return "1"
-
-
-
-
 
 
 if __name__ == '__main__':
