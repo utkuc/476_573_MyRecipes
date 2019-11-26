@@ -321,6 +321,27 @@ class SqlUtils:
         db.session.execute(text(sql), {'val': recipeId , 'ratingval': rate})
         db.session.commit()
         return True
+    def GetRecipeIngList(self,recipeId):
+        sql = """
+                            SELECT "Ingredient_name"
+                            FROM "Ingredient_List"
+                            WHERE  "Recipe_id" = :val
+                            """
+        resultProxy = db.session.execute(text(sql), {'val': recipeId})
+        db.session.commit()
+        resultset = [dict(row) for row in resultProxy]
+        return resultset
+    def GetRecipeCatList(self,recipeId):
+        sql = """
+                            SELECT "Category_name"
+                            FROM "Category_List"
+                            WHERE  "Recipe_id" = :val
+                            """
+        resultProxy = db.session.execute(text(sql), {'val': recipeId})
+        db.session.commit()
+        resultset = [dict(row) for row in resultProxy]
+        return resultset
+
 sqlUtil = SqlUtils()
 
 
@@ -360,7 +381,8 @@ def get_search_result():
             recipeList = sqlUtil.GetRecipeId(ingListForSql)
             for recipeId in recipeList:
                 recipe = sqlUtil.GetModelWithID("Recipe", recipeId.get("Recipe_id"))
-                arr.append(recipe.to_json())
+
+                arr.append(recipe.to_json(sqlUtil.GetRecipeIngList(recipe.id), sqlUtil.GetRecipeCatList(recipe.id)))
 
         print(arr)
     return json.dumps(arr)  # verilen keywordlere bağlı recipeler dönülecek

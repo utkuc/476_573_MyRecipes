@@ -48,7 +48,7 @@ class Recipe(db.Model):
     categoryList = db.relationship('Category', secondary=categoryList, lazy='subquery',
                                    backref=db.backref('Categories', lazy=True))
 
-    def to_json(self):
+    def to_json(self,ingdic:dict, catdic:dict):
         return {
             "direction": self.direction,
             "id": int(self.id),
@@ -59,10 +59,10 @@ class Recipe(db.Model):
             "protein": int(self.protein),
             "rating": int(self.rating),
             "title": self.title,
-            "ingredientList": self.ingredientList,
+            "ingredientList": [i.get("Ingredient_name") for i in ingdic],
             "ingredientDescription": self.ingredientDescription,
             "sodium": int(self.sodium),
-            "categoryList": self.categoryList
+            "categoryList": [i.get("Category_name") for i in catdic]
 
         }
 
