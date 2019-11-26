@@ -48,6 +48,24 @@ class Recipe(db.Model):
     categoryList = db.relationship('Category', secondary=categoryList, lazy='subquery',
                                    backref=db.backref('Categories', lazy=True))
 
+    def to_json(self):
+        return {
+            "direction": self.direction,
+            "id": int(self.id),
+            "date": self.date.strftime("%Y%m%d"),
+            "fat": int(self.fat),
+            "calories": int(self.calories),
+            "description": self.description,
+            "protein": int(self.protein),
+            "rating": int(self.rating),
+            "title": self.title,
+            "ingredientList": self.ingredientList,
+            "ingredientDescription": self.ingredientDescription,
+            "sodium": int(self.sodium),
+            "categoryList": self.categoryList
+
+        }
+
 
 class Menu(db.Model):
     __tablename__ = 'MENU'

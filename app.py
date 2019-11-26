@@ -351,17 +351,18 @@ def get_search_result():
                 catListForSql.append("%" + val + "%")
             recipeList = sqlUtil.GetRecipeIdForCategory(catListForSql)
             for recipeId2 in recipeList:
-                recipe = sqlUtil.GetModelWithID("Recipe", recipeId2)
-                arr.append(recipe.__dict__)
+                recipe = sqlUtil.GetModelWithID("Recipe", recipeId2.get("Recipe_id"))
+                arr.append(recipe.to_json())
         else:
             ingListForSql = []
             for val in keywords:
                 ingListForSql.append("%" + val + "%")
             recipeList = sqlUtil.GetRecipeId(ingListForSql)
             for recipeId in recipeList:
-                recipe = sqlUtil.GetModelWithID("Recipe", recipeId)
-                arr.append(recipe.__dict__)
+                recipe = sqlUtil.GetModelWithID("Recipe", recipeId.get("Recipe_id"))
+                arr.append(recipe.to_json())
 
+        print(arr)
     return json.dumps(arr)  # verilen keywordlere bağlı recipeler dönülecek
     # sorgu dışında 2 tane daha dönülecek bunlar en populer
 
