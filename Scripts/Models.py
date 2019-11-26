@@ -41,11 +41,11 @@ class Recipe(db.Model):
     protein = db.Column(db.Integer())
     rating = db.Column(db.Integer(),nullable=False)
     title = db.Column(db.String(255))
-    ingredientList = db.relationship('Ingredient', secondary=ingredientList, lazy='subquery',
+    ingredientList = db.relationship('Ingredient', secondary=ingredientList, lazy='subquery',cascade="save-update, merge, delete",
                                      backref=db.backref('Recipes', lazy=True))
     ingredientDescription = db.Column(db.String(255))
     sodium = db.Column(db.Integer())
-    categoryList = db.relationship('Category', secondary=categoryList, lazy='subquery',
+    categoryList = db.relationship('Category', secondary=categoryList, lazy='subquery',cascade="save-update, merge, delete",
                                    backref=db.backref('Categories', lazy=True))
 
     def to_json(self,ingdic:dict, catdic:dict):

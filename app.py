@@ -331,6 +331,8 @@ class SqlUtils:
         db.session.commit()
         resultset = [dict(row) for row in resultProxy]
         return resultset
+
+
     def GetRecipeCatList(self,recipeId):
         sql = """
                             SELECT "Category_name"
@@ -373,7 +375,7 @@ def get_search_result():
             recipeList = sqlUtil.GetRecipeIdForCategory(catListForSql)
             for recipeId2 in recipeList:
                 recipe = sqlUtil.GetModelWithID("Recipe", recipeId2.get("Recipe_id"))
-                arr.append(recipe.to_json())
+                arr.append(recipe.to_json(sqlUtil.GetRecipeIngList(recipe.id), sqlUtil.GetRecipeCatList(recipe.id)))
         else:
             ingListForSql = []
             for val in keywords:
@@ -385,7 +387,9 @@ def get_search_result():
                 arr.append(recipe.to_json(sqlUtil.GetRecipeIngList(recipe.id), sqlUtil.GetRecipeCatList(recipe.id)))
 
         print(arr)
-    return json.dumps(arr)  # verilen keywordlere bağlı recipeler dönülecek
+        recipes ={}
+        recipes["recipes"] = arr
+    return json.dumps(recipes)  # verilen keywordlere bağlı recipeler dönülecek
     # sorgu dışında 2 tane daha dönülecek bunlar en populer
 
 
@@ -412,6 +416,19 @@ def sign_up():
             return "False"
     return "False"
 
+@app.route('/delete_recipe', methods=['GET', 'POST'])
+def delete_recipe():
+    if request.method == 'POST':
+        content = request.get_json()
+        recipeid = content["recipeid"]
+        mod = sqlUtil.GetModelWithID("RECIPE", recipeid)
+        try:
+            db.session.delete(Recipe.query.filter_by(id=recipeid).one())
+            db.session.commit()
+            return "True"
+        except Exception as e:
+            print(str(e))
+            return "False"
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -461,7 +478,7 @@ def add_recipe():
         recipe.protein = protein
         recipe.rating = rating
         recipe.title = title
-        recipe.id = idHashed % 100000
+        recipe.id = idHashed % 100000000
         for ing in ingredientList:
             try:
                 # ingredient=sqlUtil.GetModelWithName("ingredient",ing["name"])
@@ -531,12 +548,15 @@ def get_recipe_reviews_with_id():
             result = sqlUtil.GetAllRecipeReviewById(recipe_id)
         except:
             return "False"
-    return json.dumps(result)  # all recipe info as json
+    results = {}
+    results["reviews"] = result
+    return json.dumps(results)  # all recipe info as json
 
 
 @app.route('/add_recipe_reviews_with_id', methods=['GET', 'POST'])
 def addrecipe_reviews_with_id():
     if request.method == 'POST':
+        db.session.commit()
         content = request.get_json()
         recipe_id = content["recipe_id"]
         username = content["username"]
@@ -544,6 +564,7 @@ def addrecipe_reviews_with_id():
         rating = content["rating"]
         id = uuid.uuid4().int & (1 << 64) - 1
         review : Review = Review(id=id,username=username,comments=comment,rating=rating,recipeid=recipe_id)
+
         try:
             sqlUtil.Insert(review)
             avgrate = sqlUtil.GetRecipeAverageRate(review.recipeid)
